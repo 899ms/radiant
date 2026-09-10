@@ -79,10 +79,11 @@
 		};
 	}
 
-	/** Sends heroConfig params to the iframe once it loads. */
-	function sendHeroParams(node: HTMLIFrameElement) {
-		if (!shader.heroConfig) return { destroy() {} };
-		const params = shader.heroConfig.params;
+	/** Sends the active layout's parameters to the iframe once it loads. */
+	function sendLayoutParams(node: HTMLIFrameElement) {
+		const config = layout === 'hero' ? shader.heroConfig : shader.accentConfig;
+		if (!config) return { destroy() {} };
+		const params = config.params;
 		function onLoad() {
 			for (const p of params) {
 				node.contentWindow?.postMessage({ type: 'param', name: p.name, value: p.value }, '*');
@@ -96,13 +97,13 @@
 		};
 	}
 
-	const hasCustomHero = !!shader.heroConfig;
+	const hasCustomHero = $derived(!!shader.heroConfig && shader.heroConfig.layout !== 'split');
 </script>
 
 <div class="preview layout-{layout}">
 	{#if layout === 'hero' && hasCustomHero}
 		<div class="mock-layout hero-custom-layout">
-			<iframe use:hideLabel use:sendHeroParams src="/{shader.file}" title={shader.title} style:filter></iframe>
+			<iframe use:hideLabel use:sendLayoutParams src="/{shader.file}" title={shader.title} style:filter></iframe>
 			<div class="hero-custom-overlay" aria-hidden="true">
 				<div class="mock-nav">
 					<span class="mock-logo">acme</span>
@@ -138,7 +139,7 @@
 					<div class="mock-btn">Get Started</div>
 				</div>
 				<div class="hero-shader">
-					<iframe use:hideLabel src="/{shader.file}?p=1.8" title={shader.title} style:filter></iframe>
+					<iframe use:hideLabel use:sendLayoutParams src="/{shader.file}?p=1.8" title={shader.title} style:filter></iframe>
 				</div>
 			</div>
 		</div>
@@ -154,8 +155,8 @@
 			</div>
 		</div>
 	{:else if layout === 'accent'}
-		<div class="mock-layout accent-layout" aria-hidden="true">
-			<iframe use:hideLabel src="/{shader.file}" title={shader.title} style:filter></iframe>
+		<div class="mock-layout accent-layout" class:accent-contained={shader.accentConfig?.contain} aria-hidden="true">
+			<iframe use:hideLabel use:sendLayoutParams src="/{shader.file}" title={shader.title} style:filter></iframe>
 			<div class="mock-content">
 				<h2>Creative Studio</h2>
 				<p>The shader fades in from the right as a dramatic accent, creating depth alongside your content.</p>
@@ -325,6 +326,9 @@
 		height: 100%;
 		max-width: 45%;
 		padding: 2rem 2.5rem;
+	}
+	.accent-contained iframe {
+		width: 50%;
 	}
 
 	/* Shared mock content styles */

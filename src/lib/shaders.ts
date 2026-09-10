@@ -39,8 +39,14 @@ export interface Shader {
 	creditUrl?: string;
 	/** Override the default color scheme for this shader (e.g. 'blue') */
 	defaultScheme?: string;
-	/** Custom hero layout: shader runs full-viewport with params to reposition the focal element */
+	/** Hero-specific parameters; full-viewport by default, or keep the split layout. */
 	heroConfig?: {
+		layout?: 'full' | 'split';
+		params: { name: string; value: number }[];
+	};
+	/** Accent-specific parameters, optionally fitting the whole shader into the right half. */
+	accentConfig?: {
+		contain?: boolean;
 		params: { name: string; value: number }[];
 	};
 	/** True if a deep-dive article exists for this shader at /learn/[id] */
@@ -1269,6 +1275,30 @@ export const shaders: Shader[] = [
 		},
 		hasArticle: true
 	},
+	{
+		id: 'navier-stokes',
+		file: 'navier-stokes.html',
+		title: 'Navier–Stokes',
+		desc: 'A turbulent fluid jet rolls into luminous eddies. Move your cursor to stir the flow.',
+		tags: ['fill', 'physics', 'organic'],
+		technique: 'webgl',
+		heroConfig: {
+			layout: 'split',
+			params: [{ name: 'REVERSE', value: 1 }]
+		},
+		accentConfig: {
+			contain: true,
+			params: [{ name: 'REVERSE', value: 1 }]
+		},
+		credit: 'Visual inspiration: C. Fukushima & J. Westerweel, TU Delft',
+		creditUrl: 'https://commons.wikimedia.org/wiki/File:False_color_image_of_the_far_field_of_a_submerged_turbulent_jet.jpg',
+		params: [
+			{ name: 'FLOW', label: 'Flow Speed', min: 0, max: 2, step: 0.1, default: 1 },
+			{ name: 'TURBULENCE', label: 'Turbulence', min: 0, max: 35, step: 1, default: 18 },
+			{ name: 'WIDTH', label: 'Jet Width', min: 0.06, max: 0.25, step: 0.01, default: 0.13 },
+			{ name: 'SPECTRUM', label: 'False Color', min: 0, max: 1, step: 0.1, default: 1 }
+		]
+	}
 ];
 
 export function getShaderById(id: string): Shader | undefined {
